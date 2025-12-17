@@ -13,6 +13,7 @@
 - **Error Handling**: Configurable error handling with force-continue option
 - **Safe Delete**: Automatic file deletion with expiration tracking
 
+## Usage Example
 **Example Job Configuration (`jobs/backup-codes.json`):**
 
 This example demonstrates a complete backup workflow that:
