@@ -25,8 +25,8 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/agentalin.git
-   cd agentalin
+   git clone https://github.com/titan2420/agentalin-core.git
+   cd agentalin-core
    ```
 
 2. **Create a virtual environment (recommended):**
@@ -536,5 +536,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-For more information, issues, or feature requests, please visit the [GitHub repository](https://github.com/yourusername/agentalin).
+For more information, issues, or feature requests, please visit the [GitHub repository](https://github.com/titan2420/agentalin-core).
 
