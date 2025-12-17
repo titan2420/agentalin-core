@@ -1,17 +1,72 @@
-# Agentalin
+# Agentalin core
 
-**Agentalin** is a powerful Python-based job execution system designed for automating tasks across local and remote servers. It provides a flexible, configuration-driven approach to managing complex workflows, backups, deployments, and maintenance tasks.
+**Agentalin** is a powerful automation agent designed for tasks across local and remote servers. It provides a flexible, configuration-driven approach to managing complex workflows, backups, deployments, and maintenance tasks.
 
 ## Features
 
-- 🔐 **Secure Password Management**: Encrypted password storage with Fernet encryption
-- 🌐 **Multi-Server Support**: Execute jobs on multiple remote servers via SSH
-- 📋 **Job Scheduling**: Built-in interval-based job scheduling with execution tracking
-- 🔄 **Multiple Actions**: Support for SSH commands, SCP transfers, HTTP requests (curl), compression, and safe-delete operations
-- 📝 **Comprehensive Logging**: Detailed execution logs stored in `~/.agentalin/logs/`
-- 🔧 **Variable Expansion**: Environment variable support for dynamic job configuration
-- 🛡️ **Error Handling**: Configurable error handling with force-continue option
-- 📦 **Safe Delete**: Automatic file deletion with expiration tracking
+- **Secure Password Management**: Encrypted password storage with Fernet encryption
+- **Multi-Server Support**: Execute jobs on multiple remote servers via SSH
+- **Job Scheduling**: Built-in interval-based job scheduling with execution tracking
+- **Multiple Actions**: Support for SSH commands, SCP transfers, HTTP requests (curl), compression, and safe-delete operations
+- **Comprehensive Logging**: Detailed execution logs
+- **Variable Expansion**: Environment variable support for dynamic job configuration
+- **Error Handling**: Configurable error handling with force-continue option
+- **Safe Delete**: Automatic file deletion with expiration tracking
+
+**Example Job Configuration (`jobs/backup-codes.json`):**
+
+This example demonstrates a complete backup workflow that:
+1. Creates a timestamped variable, backups folder in server, and localhost and move old backups to old backups folder
+2. Compresses the project files (excluding `node_modules` and `.next` directories)
+3. Transfers the backup archive to the local machine
+4. Safely removes the temporary backup file from the remote server after 10 days
+
+The job runs every 3 days (259200 seconds) and uses variable expansion (`${AGENTALIN_TIMESTAMP}`) to create unique backup filenames. The routine manages local backup directories by rotating old backups before downloading new ones.
+
+```json
+{
+    "name": "backup_codes",
+    "status": "active",
+    "interval": 259200,
+    "routine": [
+        "my-server: AGENTALIN_TIMESTAMP=$(date '+%Y-%m-%d_%H-%M-%S')",
+        "my-server: mkdir -p ~/backups",
+        "local: mkdir -p ~/backups/codes/current",
+        "local: mkdir -p ~/backups/codes/old",
+        "local: mv ~/backups/codes/current/* ~/backups/codes/old/",
+        {
+            "action": "compress",
+            "type": "tar",
+            "host": "my-server",
+            "info": {
+                "source": "/home/user/project/",
+                "destination": "~/backups/backup_${AGENTALIN_TIMESTAMP}.tar.gz"
+            },
+            "ignore": [
+                "/home/user/project/node_modules",
+                "/home/user/project/.next"
+            ]
+        },
+        {
+            "action": "scp",
+            "host": "localhost",
+            "info": {
+                "from": "my-server",
+                "source": "~/backups/backup_${AGENTALIN_TIMESTAMP}.tar.gz",
+                "destination": "~/backups/codes/current/"
+            }
+        },
+        {
+            "action": "safe-delete",
+            "host": "my-server",
+            "info": {
+                "path": "~/backups/backup_${AGENTALIN_TIMESTAMP}.tar.gz",
+                "expire": 864000
+            }
+        }
+    ]
+}
+```
 
 ## Installation
 
@@ -26,7 +81,7 @@
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/titan2420/agentalin-core.git
-   cd agentalin-core
+   cd agentalin-core && mkdir servers jobs
    ```
 
 2. **Create a virtual environment (recommended):**
@@ -526,13 +581,6 @@ Logs include:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-[Specify your license here]
-
-## Author
-
-[Your name/username]
 
 ---
 
